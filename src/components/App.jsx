@@ -93,7 +93,9 @@ const App = () => {
         <Button onClick={handleLoadMoreClick} />
       )}
       {isLoading ? (
-        <ThreeDots color="#3f51b5" />
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2rem' }}>
+          <ThreeDots color="#3f51b5" />
+        </div>
       ) : imgOnRequest > 1 && imgOnRequest === totalImages && (
         <Notification>Photos are finished saving...</Notification>
       )}
