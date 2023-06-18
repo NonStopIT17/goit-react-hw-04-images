@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import ImageGalleryItem from 'components/ImageGalleryItem/ImageGalleryItem';
 import { ImageList } from './ImageGallery.styled';
 
-function ImageGallery({ items, onImgClick }) {
+const ImageGallery = ({ items, onImgClick }) => {
   return (
     <ImageList>
       {items.map(({ id, tags, webformatURL, largeImageURL }) => (
@@ -17,7 +17,7 @@ function ImageGallery({ items, onImgClick }) {
       ))}
     </ImageList>
   );
-}
+};
 
 ImageGallery.propTypes = {
   items: PropTypes.arrayOf(

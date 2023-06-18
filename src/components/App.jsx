@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import * as API from './services/api';
@@ -11,24 +11,22 @@ import Notification from './Notification';
 import { SearchApp } from './App.styled';
 import { ThreeDots } from 'react-loader-spinner';
 
-export default class App extends Component {
-  state = {
-    searchQuery: '',
-    images: [],
-    page: 1,
-    isLoading: false,
-    largeImgLink: null,
-    imgAlt: null,
-    imgOnRequest: 0,
-    totalImages: 0,
-    error: null,
-  };
+const App = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [images, setImages] = useState([]);
+  const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [largeImgLink, setLargeImgLink] = useState(null);
+  const [imgAlt, setImgAlt] = useState(null);
+  const [imgOnRequest, setImgOnRequest] = useState(0);
+  const [totalImages, setTotalImages] = useState(0);
+  const [error, setError] = useState(null);
 
-  async componentDidUpdate(_, prevState) {
-    const { searchQuery, page } = this.state;
+  useEffect(() => {
+    const fetchData = async () => {
+      if (searchQuery === '') return;
 
-    if (prevState.searchQuery !== searchQuery || (prevState.page !== page && page !== 1)) {
-      this.setState({ isLoading: true });
+      setIsLoading(true);
 
       try {
         const response = await API.fetchImagesWithQuery(searchQuery, page);
@@ -46,72 +44,64 @@ export default class App extends Component {
           tags: image.tags,
         }));
 
-        const shouldReplaceImages = prevState.searchQuery !== searchQuery;
+        if (page === 1) {
+          setImages(imagesData);
+        } else {
+          setImages(prevImages => [...prevImages, ...imagesData]);
+        }
 
-        this.setState(prevState => ({
-          searchQuery,
-          images: shouldReplaceImages ? imagesData : [...prevState.images, ...imagesData],
-          totalImages: total,
-          imgOnRequest: hits.length,
-        }));
+        setTotalImages(total);
+        setImgOnRequest(hits.length);
       } catch (error) {
-        this.setState({ error });
+        setError(error);
       } finally {
-        this.setState({ isLoading: false });
+        setIsLoading(false);
       }
-    }
-  }
+    };
 
-  handleSearch = searchQuery => {
-    this.setState({ searchQuery, page: 1, imgOnRequest: 0, images: [] });
+    fetchData();
+  }, [searchQuery, page]);
+
+  const handleSearch = searchQuery => {
+    setSearchQuery(searchQuery);
+    setPage(1);
+    setImgOnRequest(0);
+    setImages([]);
   };
 
-  handleImageClick = event => {
+  const handleImageClick = event => {
     const { name, alt } = event.target;
-    this.setState({
-      largeImgLink: name,
-      imgAlt: alt,
-    });
+    setLargeImgLink(name);
+    setImgAlt(alt);
   };
 
-  handleLoadMoreClick = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
+  const handleLoadMoreClick = () => {
+    setPage(prevPage => prevPage + 1);
   };
 
-  handleCloseModal = () => {
-    this.setState({ largeImgLink: null, imgAlt: null });
+  const handleCloseModal = () => {
+    setLargeImgLink(null);
+    setImgAlt(null);
   };
 
-  render() {
-    const {
-      images,
-      imgAlt,
-      largeImgLink,
-      isLoading,
-      imgOnRequest,
-      totalImages,
-    } = this.state;
+  return (
+    <SearchApp>
+      <Searchbar onSubmit={handleSearch} />
+      {images.length > 0 && <ImageGallery items={images} onImgClick={handleImageClick} />}
+      {largeImgLink && <Modal alt={imgAlt} url={largeImgLink} closeModal={handleCloseModal} />}
+      {imgOnRequest >= 12 && imgOnRequest < totalImages && !isLoading && (
+        <Button onClick={handleLoadMoreClick} />
+      )}
+      {isLoading ? (
+        <ThreeDots color="#3f51b5" />
+      ) : imgOnRequest > 1 && imgOnRequest === totalImages && (
+        <Notification>Photos are finished saving...</Notification>
+      )}
+      <ToastContainer autoClose={2000} />
+      <GlobalStyles />
+    </SearchApp>
+  );
+};
 
-    return (
-      <SearchApp>
-        <Searchbar onSubmit={this.handleSearch} />
-        {images.length > 0 && (
-          <ImageGallery items={images} onImgClick={this.handleImageClick} />
-        )}
-        {largeImgLink && (
-          <Modal alt={imgAlt} url={largeImgLink} closeModal={this.handleCloseModal} />
-        )}
-        {imgOnRequest >= 12 && imgOnRequest < totalImages && !isLoading && (
-          <Button onClick={this.handleLoadMoreClick} />
-        )}
-        {isLoading ? <ThreeDots color="#3f51b5" /> : imgOnRequest > 1 && imgOnRequest === totalImages && (
-          <Notification>Photos are finished saving...</Notification>
-        )}
-        <ToastContainer autoClose={2000} />
-        <GlobalStyles />
-      </SearchApp>
-    );
-  }
-}
+export default App;
+
