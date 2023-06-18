@@ -20,7 +20,6 @@ const App = () => {
   const [imgAlt, setImgAlt] = useState(null);
   const [imgOnRequest, setImgOnRequest] = useState(0);
   const [totalImages, setTotalImages] = useState(0);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -53,7 +52,6 @@ const App = () => {
         setTotalImages(total);
         setImgOnRequest(hits.length);
       } catch (error) {
-        setError(error);
       } finally {
         setIsLoading(false);
       }
@@ -93,9 +91,7 @@ const App = () => {
         <Button onClick={handleLoadMoreClick} />
       )}
       {isLoading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2rem' }}>
-          <ThreeDots color="#3f51b5" />
-        </div>
+        <ThreeDots color="#3f51b5" />
       ) : imgOnRequest > 1 && imgOnRequest === totalImages && (
         <Notification>Photos are finished saving...</Notification>
       )}
@@ -106,4 +102,3 @@ const App = () => {
 };
 
 export default App;
-
