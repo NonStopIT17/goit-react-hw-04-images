@@ -82,19 +82,27 @@ const App = () => {
     setImgAlt(null);
   };
 
+  const renderLoadMoreButton = () => {
+    if (imgOnRequest >= 12 && imgOnRequest < totalImages && !isLoading) {
+      return <Button onClick={handleLoadMoreClick} />;
+    }
+    return null;
+  };
+
+  const renderNotification = () => {
+    if (!isLoading && imgOnRequest > 1 && imgOnRequest === totalImages) {
+      return <Notification>Photos are finished saving...</Notification>;
+    }
+    return null;
+  };
+
   return (
     <SearchApp>
       <Searchbar onSubmit={handleSearch} />
       {images.length > 0 && <ImageGallery items={images} onImgClick={handleImageClick} />}
       {largeImgLink && <Modal alt={imgAlt} url={largeImgLink} closeModal={handleCloseModal} />}
-      {imgOnRequest >= 12 && imgOnRequest < totalImages && !isLoading && (
-        <Button onClick={handleLoadMoreClick} />
-      )}
-      {isLoading ? (
-        <ThreeDots color="#3f51b5" />
-      ) : imgOnRequest > 1 && imgOnRequest === totalImages && (
-        <Notification>Photos are finished saving...</Notification>
-      )}
+      {renderLoadMoreButton()}
+      {isLoading ? <ThreeDots color="#3f51b5" /> : renderNotification()}
       <ToastContainer autoClose={2000} />
       <GlobalStyles />
     </SearchApp>
